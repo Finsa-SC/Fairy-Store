@@ -1,0 +1,98 @@
+package com.example.fairystore.product
+
+import android.os.Bundle
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.fairystore.R
+import com.example.fairystore.core.network.ApiHelper
+import com.example.fairystore.databinding.FragmentProductBinding
+import org.json.JSONArray
+import org.json.JSONObject
+
+private const val ARG_PARAM1 = "param1"
+private const val ARG_PARAM2 = "param2"
+
+class ProductFragment : Fragment() {
+    private var param1: String? = null
+    private var param2: String? = null
+
+    private var _binding: FragmentProductBinding? = null
+    private val binding get() = _binding!!
+
+    private val productList = mutableListOf<ProductModel>()
+    private lateinit var adapter: ProductAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            param1 = it.getString(ARG_PARAM1)
+            param2 = it.getString(ARG_PARAM2)
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentProductBinding.inflate(layoutInflater, container, false)
+        return binding.root
+    }
+
+    companion object {
+        @JvmStatic
+        fun newInstance(param1: String, param2: String) =
+            ProductFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_PARAM1, param1)
+                    putString(ARG_PARAM2, param2)
+                }
+            }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        adapter = ProductAdapter(productList)
+        val rv = binding.rvProduct
+        rv.adapter = adapter
+        rv.layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)
+        loadProduct()
+    }
+
+    private fun loadProduct(){
+        Thread{
+            val (code, response) = ApiHelper.get("products")
+            activity?.runOnUiThread {
+                val jsonData = if(!response.isNullOrBlank()) JSONArray(response) else null
+                if(code == 200 && jsonData!=null){
+                    if(jsonData.length() < 0) {
+                        Toast.makeText(requireContext(), "No Product Found", Toast.LENGTH_SHORT).show()
+                        return@runOnUiThread
+                    }
+                    productList.clear()
+                    for(i in 0 until jsonData.length()){
+                        val json = jsonData.getJSONObject(i)
+                        val jsonRate = json.getJSONObject("rating")
+                        productList.add(ProductModel(
+                            json.getInt("id"),
+                            json.getString("title"),
+                            json.getDouble("price"),
+                            json.getString("category"),
+                            json.getString("image"),
+                            jsonRate.getDouble("rate"),
+                        ))
+                        adapter.notifyDataSetChanged()
+                    }
+
+                }else{
+                    Toast.makeText(requireContext(), "Server Doesn't Responding", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+}
