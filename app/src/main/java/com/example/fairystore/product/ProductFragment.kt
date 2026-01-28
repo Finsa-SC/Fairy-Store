@@ -1,5 +1,6 @@
 package com.example.fairystore.product
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -57,7 +58,14 @@ class ProductFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = ProductAdapter(productList)
+        adapter = ProductAdapter(
+            productList,
+            onCard = {prd ->
+                val intent = Intent(requireContext(), ProductDetailActivity::class.java)
+                intent.putExtra("PRD_ID", prd.id)
+                startActivity(intent)
+            }
+        )
         val rv = binding.rvProduct
         rv.adapter = adapter
         rv.layoutManager = GridLayoutManager(context, 3, GridLayoutManager.VERTICAL, false)

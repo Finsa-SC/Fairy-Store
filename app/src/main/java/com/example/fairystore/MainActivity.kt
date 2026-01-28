@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 
         TabLayoutMediator(tabLayout, viewPager) {tab, pos ->
             tab.icon = ContextCompat.getDrawable(this, icons[pos])
-        }
+        }.attach()
 
     }
 }

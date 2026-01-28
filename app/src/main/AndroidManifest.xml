@@ -15,6 +15,12 @@
         android:theme="@style/Theme.FairyStore"
         android:usesCleartextTraffic="true">
         <activity
+            android:name=".user.UserDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".product.ProductDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".auth.RegisterActivity"
             android:exported="false" />
         <activity
