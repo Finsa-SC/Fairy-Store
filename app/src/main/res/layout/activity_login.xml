@@ -32,28 +32,47 @@
             android:textSize="25sp"
             android:textStyle="bold" />
 
-        <EditText
-            android:id="@+id/txtUsername"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/text_border"
-            android:drawableLeft="@drawable/round_person_2_24"
-            android:drawablePadding="10dp"
-            android:padding="7dp"
+            android:layout_height="wrap_content"
             android:hint="@string/username"
-            android:inputType="textPersonName"/>
-
-        <EditText
-            android:id="@+id/txtPassword"
+            app:startIconDrawable="@drawable/round_person_2_24"
+            app:boxBackgroundMode="none">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/text_border"
+                android:inputType="textPersonName"/>
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="14dp"
-            android:background="@drawable/text_border"
-            android:drawableLeft="@drawable/round_lock_24"
-            android:drawablePadding="10dp"
-            android:padding="7dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:hint="@string/password"
-            android:inputType="textPassword"/>
+            app:boxBackgroundMode="none"
+            app:startIconDrawable="@drawable/round_lock_24"
+            app:endIconMode="password_toggle">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/txtPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/text_border"
+                android:inputType="textPassword"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+<!--        <EditText-->
+<!--            android:id="@+id/txtPassword"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="50dp"-->
+<!--            android:layout_marginTop="14dp"-->
+<!--            android:background="@drawable/text_border"-->
+<!--            android:drawableLeft="@drawable/round_lock_24"-->
+<!--            android:drawablePadding="10dp"-->
+<!--            android:padding="7dp"-->
+<!--            android:hint="@string/password"-->
+<!--            android:inputType="textPassword"-->
+            />
 
         <Button
             android:id="@+id/btnLogin"

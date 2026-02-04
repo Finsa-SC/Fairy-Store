@@ -28,4 +28,5 @@
     <string name="street">Street</string>
     <string name="number">Number</string>
     <string name="zipcode">Zipcode</string>
+    <string name="passwordd">Password</string>
 </resources>
