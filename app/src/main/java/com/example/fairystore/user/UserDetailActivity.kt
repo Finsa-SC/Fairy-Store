@@ -34,11 +34,10 @@ class UserDetailActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun loadUser(userId: Int){
-        Thread{
-            val (code, response) = ApiHelper.get("users/${userId}")
-            runOnUiThread {
-                if(code==200&&!response.isNullOrBlank()){
-                    val json = JSONObject(response)
+        ApiHelper.get("users/${userId}"){
+            when(it){
+                is ApiHelper.ApiResult.Success -> {
+                    val json = JSONObject(it.jsonBody)
                     val jsonFullName = json.getJSONObject("name")
                     val jsonAddress = json.getJSONObject("address")
 
@@ -55,12 +54,12 @@ class UserDetailActivity : AppCompatActivity() {
                     binding.lblStreet.text = jsonAddress.getString("street")
                     binding.lblNumber.text= jsonAddress.getString("number")
                     binding.lblZipcode.text = jsonAddress.getString("zipcode")
-                }else if(!response.isNullOrBlank()){
-                    Toast.makeText(this, response, Toast.LENGTH_SHORT).show()
-                }else{
-                    Toast.makeText(this, "Server doesn't responding", Toast.LENGTH_SHORT).show()
                 }
+                is ApiHelper.ApiResult.Empty ->
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
+                is ApiHelper.ApiResult.Error ->
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
             }
-        }.start()
+        }
     }
 }

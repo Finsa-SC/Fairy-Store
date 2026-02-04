@@ -73,14 +73,13 @@ class ProductFragment : Fragment() {
     }
 
     private fun loadProduct(){
-        Thread{
-            val (code, response) = ApiHelper.get("products")
-            activity?.runOnUiThread {
-                val jsonData = if(!response.isNullOrBlank()) JSONArray(response) else null
-                if(code == 200 && jsonData!=null){
-                    if(jsonData.length() < 0) {
+        ApiHelper.get("products"){
+            when(it){
+                is ApiHelper.ApiResult.Success -> {
+                    val jsonData = JSONArray(it.jsonBody)
+                    if(jsonData.length() <= 0) {
                         Toast.makeText(requireContext(), "No Product Found", Toast.LENGTH_SHORT).show()
-                        return@runOnUiThread
+                        return@get
                     }
                     productList.clear()
                     for(i in 0 until jsonData.length()){
@@ -96,11 +95,12 @@ class ProductFragment : Fragment() {
                         ))
                         adapter.notifyDataSetChanged()
                     }
-
-                }else{
-                    Toast.makeText(requireContext(), "Server Doesn't Responding", Toast.LENGTH_SHORT).show()
                 }
+                is ApiHelper.ApiResult.Empty ->
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
+                is ApiHelper.ApiResult.Error ->
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
             }
-        }.start()
+        }
     }
 }

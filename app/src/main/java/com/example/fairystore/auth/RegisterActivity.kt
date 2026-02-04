@@ -8,6 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.fairystore.MainActivity
 import com.example.fairystore.R
 import com.example.fairystore.core.network.ApiHelper
 import com.example.fairystore.databinding.ActivityRegisterBinding
@@ -44,19 +45,18 @@ class RegisterActivity : AppCompatActivity() {
             put("username", username)
             put("password", password)
         }
-        Thread{
-            val (code, response) = ApiHelper.post("users", jsonBody)
-            runOnUiThread {
-                if(code==201 && !response.isNullOrBlank()){
+        ApiHelper.post("users", jsonBody){
+            when(it){
+                is ApiHelper.ApiResult.Success ->{
                     Toast.makeText(this, "Register Successfully", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this, LoginActivity::class.java))
                     this.finish()
-                }else if(!response.isNullOrBlank()){
-                    Toast.makeText(this, response, Toast.LENGTH_SHORT).show()
-                }else{
-                    Toast.makeText(this, "Server Doesn't Responding", Toast.LENGTH_SHORT).show()
                 }
+                is ApiHelper.ApiResult.Empty ->
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
+                is ApiHelper.ApiResult.Error ->
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
             }
-        }.start()
+        }
     }
 }

@@ -75,11 +75,10 @@ class UserFragment : Fragment() {
     }
 
     private fun loadUser(){
-        Thread{
-            val (code, response) = ApiHelper.get("users")
-            activity?.runOnUiThread {
-                if(code==200&&!response.isNullOrBlank()){
-                    val jsonArr = JSONArray(response)
+        ApiHelper.get("users"){
+            when(it){
+                is ApiHelper.ApiResult.Success -> {
+                    val jsonArr = JSONArray(it.jsonBody)
                     for(i in 0 until jsonArr.length()){
                         val json = jsonArr.getJSONObject(i)
                         userList.add(UserUiModel(
@@ -90,12 +89,12 @@ class UserFragment : Fragment() {
                         ))
                         adapter.notifyDataSetChanged()
                     }
-                }else if(!response.isNullOrBlank()){
-                    Toast.makeText(requireContext(), response, Toast.LENGTH_SHORT).show()
-                }else{
-                    Toast.makeText(requireContext(), "Server doesn't responding", Toast.LENGTH_SHORT).show()
                 }
+                is ApiHelper.ApiResult.Empty ->
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
+                is ApiHelper.ApiResult.Error ->
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
             }
-        }.start()
+        }
     }
 }

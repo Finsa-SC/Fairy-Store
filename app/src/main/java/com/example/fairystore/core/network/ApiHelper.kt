@@ -1,50 +1,91 @@
 package com.example.fairystore.core.network
 
+import android.os.Handler
+import android.os.Looper
+import androidx.core.os.unregisterForAllProfilingResults
 import org.json.JSONObject
-import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
 object ApiHelper {
     private const val baseUrl = "https://fakestoreapi.com/"
-    private fun request(method: String, endpoint: String, jsonBody: JSONObject? = null): Pair<Int, String?>{
-        var conn: HttpURLConnection? = null
-        return try{
-            conn = (URL(baseUrl+endpoint).openConnection() as HttpURLConnection).apply {
-                requestMethod=method
-                readTimeout=5000
-                connectTimeout=5000
-                if(jsonBody!=null){
-                    setRequestProperty("Content-Type", "application/json")
-                    doOutput=true
-                }
-            }
+    private val handler = Handler(Looper.getMainLooper())
 
-            jsonBody?.let{
-                conn.outputStream.use { outputStream ->
-                    outputStream.write(it.toString().toByteArray())
-                }
-            }
-
-            val responseCode = conn.responseCode
-
-            val responseText = try{
-                if(responseCode in 200..299){
-                    conn.inputStream.bufferedReader().use { it.readText() }
-                }else{
-                    conn.errorStream?.bufferedReader()?.use { it.readText() }
-                }
-            }catch (e: Exception){null}
-            Pair(responseCode, responseText)
-        }catch (e: IOException){
-            Pair(-1, null)
-        }catch (e: Exception){
-            Pair(-2, null)
-        }
+    enum class HttpMethod{
+        POST,
+        PUT,
+        GET,
+        DELETE
     }
 
-    fun post(endpoint: String, jsonBody: JSONObject?=null) = request("POST", endpoint, jsonBody)
-    fun put(endpoint: String, jsonBody: JSONObject?=null) = request("PUT", endpoint, jsonBody)
-    fun get(endpoint: String) = request("GET", endpoint)
-    fun delete(endpoint: String) = request("DELETE", endpoint)
+    sealed class ApiResult{
+        data class Success (val jsonBody: String): ApiResult()
+        data class Empty(val msg: String = "Server Return Empty Data"): ApiResult()
+        data class Error(val code: Int, val msg: String): ApiResult()
+    }
+
+    private fun request(
+        method: HttpMethod,
+        endpoint: String,
+        jsonBody: JSONObject? = null,
+        callback: (ApiResult) -> Unit)
+    {
+        Thread {
+            var conn: HttpURLConnection? = null
+            val result = try {
+                conn = (URL(baseUrl + endpoint).openConnection() as HttpURLConnection).apply {
+                    requestMethod = method.name
+                    readTimeout = 5000
+                    connectTimeout = 5000
+                    doInput = true
+                    if (jsonBody != null) {
+                        setRequestProperty("Content-Type", "application/json")
+                        doOutput = true
+                    }
+                }
+                jsonBody?.let {
+                    conn.outputStream.use { outputStream ->
+                        outputStream.write(it.toString().toByteArray())
+                    }
+                }
+                val code = conn.responseCode
+
+                val text = try {
+                    if (code in 200..299) {
+                        conn.inputStream.bufferedReader().use { it.readText() }
+                    } else {
+                        conn.errorStream?.bufferedReader()?.use { it.readText() }
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+
+                when {
+                    code in 200..299 && text.isNullOrBlank() ->
+                        ApiResult.Empty()
+
+                    code in 200..299 ->
+                        ApiResult.Success(text.toString())
+
+                    else -> {
+                        val message = try {
+                            text?.let {
+                                text
+                            } ?: "Internal Server Error"
+                        } catch (_: Exception) {
+                            "Internal Server Error"
+                        }
+                        ApiResult.Error(code, message)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ApiResult.Error(-1, "n ")
+            }
+            handler.post { callback(result) }
+        }.start()
+    }
+
+    fun post(endpoint: String, jsonBody: JSONObject? = null, callback: (ApiResult) -> Unit) = request(HttpMethod.POST, endpoint, jsonBody, callback)
+    fun get(endpoint: String, callback: (ApiResult) -> Unit) = request(HttpMethod.GET, endpoint, callback = callback)
 }

@@ -31,11 +31,10 @@ class ProductDetailActivity : AppCompatActivity() {
 
 
     private fun loadProduct(id: Int){
-        Thread{
-            val (code, response) = ApiHelper.get("products/${id}")
-            runOnUiThread {
-                if(code==200&&!response.isNullOrBlank()){
-                    val json = JSONObject(response)
+        ApiHelper.get("products/${id}"){
+            when(it){
+                is ApiHelper.ApiResult.Success -> {
+                    val json = JSONObject(it.jsonBody)
                     val jsonRating = json.getJSONObject("rating")
                     ImageHelper.imageLoader(binding.imgProduct, json.getString("image"))
                     binding.lblTitle.text = json.getString("title")
@@ -43,13 +42,12 @@ class ProductDetailActivity : AppCompatActivity() {
                     binding.lblDescription.text = json.getString("description")
                     binding.lblStar.text = jsonRating.getDouble("rate").toString()
                     binding.lblRating.text = jsonRating.getInt("count").toString()
-
-                }else if(!response.isNullOrBlank()){
-                    Toast.makeText(this, "Error while load this page", Toast.LENGTH_SHORT).show()
-                }else{
-                    Toast.makeText(this, "Server Doesn't Responding", Toast.LENGTH_SHORT).show()
                 }
+                is ApiHelper.ApiResult.Empty ->
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
+                is ApiHelper.ApiResult.Error ->
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
             }
-        }.start()
+        }
     }
 }

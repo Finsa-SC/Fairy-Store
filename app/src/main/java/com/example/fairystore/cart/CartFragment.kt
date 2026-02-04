@@ -77,77 +77,59 @@ class CartFragment : Fragment() {
         getProduct()
     }
 
-    private fun getUserCart(userId: Int){
-        Thread{
-            try{
-                val (code, response) = ApiHelper.get("carts/${userId}")
-                activity?.runOnUiThread {
-                    if(code==200&&!response.isNullOrBlank()){
-                        val jsonResponse = JSONObject(response)
-                        val cartResponse = jsonResponse.getJSONArray("products")
+    private fun getUserCart(userId: Int) {
+        ApiHelper.get("carts/${userId}") {
+            when (it) {
+                is ApiHelper.ApiResult.Success -> {
+                    val jsonResponse = JSONObject(it.jsonBody)
+                    val cartResponse = jsonResponse.getJSONArray("products")
 
-                        cartList.clear()
-                        for(i in 0 until cartResponse.length()){
-                            val json = cartResponse.getJSONObject(i)
+                    cartList.clear()
+                    for (i in 0 until cartResponse.length()) {
+                        val json = cartResponse.getJSONObject(i)
 
-                            cartList.add(CartModel(
+                        cartList.add(
+                            CartModel(
                                 json.getInt("productId"),
                                 json.getInt("quantity")
-                            ))
-                        }
-                        responseCart = CartResponse(jsonResponse.getInt("id"), cartList)
-
-                    }else if(!response.isNullOrBlank()){
-                        Toast.makeText(requireContext(), response, Toast.LENGTH_SHORT).show()
-                    }else{
-                        Toast.makeText(requireContext(), "Server doesn't responding", Toast.LENGTH_SHORT).show()
+                            )
+                        )
                     }
+                    adapter.notifyDataSetChanged()
+                    responseCart = CartResponse( jsonResponse.getInt("id"), cartList)
                 }
-            }catch (e: Exception){
-                e.printStackTrace()
-            }finally {
-                activity?.runOnUiThread {
-                    cartLoaded = true
-                    cartMapping()
-                }
-            }
-        }.start()
-    }
 
+                is ApiHelper.ApiResult.Empty ->
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
+
+                is ApiHelper.ApiResult.Error ->
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     private fun getProduct(){
-        Thread{
-            try{
-                val (code, response) = ApiHelper.get("products")
-                activity?.runOnUiThread {
-                    if(code==200&&!response.isNullOrBlank()){
-                        val jsonResponse = JSONArray(response)
-                        productList.clear()
-                        for(i in 0 until jsonResponse.length()){
-                            val json = jsonResponse.getJSONObject(i)
-                            productList.add(ProductModel(
-                                json.getInt("id"),
-                                json.getString("title"),
-                                json.getDouble("price"),
-                                json.getString("image")
-                            ))
-                        }
-                    }else if(!response.isNullOrBlank()){
-                        Toast.makeText(requireContext(), response, Toast.LENGTH_SHORT).show()
-                    }else{
-                        Toast.makeText(requireContext(), "Server doesn't responding", Toast.LENGTH_SHORT).show()
+        ApiHelper.get("products"){
+            when(it){
+                is ApiHelper.ApiResult.Success -> {
+                    val jsonResponse = JSONArray(it.jsonBody)
+                    productList.clear()
+                    for(i in 0 until jsonResponse.length()){
+                        val json = jsonResponse.getJSONObject(i)
+                        productList.add(ProductModel(
+                            json.getInt("id"),
+                            json.getString("title"),
+                            json.getDouble("price"),
+                            json.getString("image")
+                        ))
                     }
                 }
-            }catch (e: Exception){
-                e.printStackTrace()
-            }finally {
-                activity?.runOnUiThread {
-                    productLoaded = true
-                    cartMapping()
-                }
+                is ApiHelper.ApiResult.Empty ->
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
+                is ApiHelper.ApiResult.Error ->
+                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
             }
-        }.start()
+        }
     }
-
     private fun cartMapping(){
 
         if(!cartLoaded || !productLoaded) return

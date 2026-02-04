@@ -39,26 +39,22 @@ class LoginActivity : AppCompatActivity() {
 
     private fun loginUser(username: String, password: String){
 
-
         val jsonBody = JSONObject().apply {
             put("username", username)
             put("password", password)
         }
 
-        Thread{
-            val (code, response) = ApiHelper.post("auth/login", jsonBody)
-            runOnUiThread {
-                if(code == 200 || code == 201 && !response.isNullOrBlank()){
-                    val jsonResponse = JSONObject(response)
-                    val token = jsonResponse.getString("token")
+        ApiHelper.post("auth/login", jsonBody){
+            when(it){
+                is ApiHelper.ApiResult.Success ->{
                     startActivity(Intent(this, MainActivity::class.java))
                     this.finish()
-                }else if(!response.isNullOrBlank()){
-                    Toast.makeText(this,  response, Toast.LENGTH_SHORT).show()
-                }else{
-                    Toast.makeText(this, "Server Doesn't Responding", Toast.LENGTH_SHORT).show()
                 }
+                is ApiHelper.ApiResult.Empty ->
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
+                is ApiHelper.ApiResult.Error ->
+                    Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
             }
-        }.start()
+        }
     }
 }
