@@ -70,7 +70,20 @@ class CartFragment : Fragment() {
         val rv = binding.rvCart
 
         rv.layoutManager = LinearLayoutManager(requireContext())
-        adapter = CartAdapter(cartUiList)
+        adapter = CartAdapter(
+            cartUiList,
+            onPlus = { cart ->
+                val index = cartUiList.indexOf(cart)
+                cart.qty++
+                adapter.notifyItemChanged(index)
+            },
+            onDecrease = { cart ->
+                val index = cartUiList.indexOf(cart)
+                if(cart.qty > 1)
+                    cart.qty--
+                adapter.notifyItemChanged(index)
+            }
+            )
         rv.adapter = adapter
 
         getUserCart(1)
@@ -95,8 +108,10 @@ class CartFragment : Fragment() {
                             )
                         )
                     }
-                    adapter.notifyDataSetChanged()
                     responseCart = CartResponse( jsonResponse.getInt("id"), cartList)
+                    adapter.notifyDataSetChanged()
+                    cartLoaded = true
+                    cartMapping()
                 }
 
                 is ApiHelper.ApiResult.Empty ->
@@ -122,6 +137,8 @@ class CartFragment : Fragment() {
                             json.getString("image")
                         ))
                     }
+                    productLoaded = true
+                    cartMapping()
                 }
                 is ApiHelper.ApiResult.Empty ->
                     Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()

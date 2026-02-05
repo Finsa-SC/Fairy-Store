@@ -2,12 +2,15 @@ package com.example.fairystore.cart
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fairystore.core.util.ImageHelper
 import com.example.fairystore.databinding.CartDesignUiBinding
 
 class CartAdapter(
-    private val cartList: List<CartItemModel>
+    private val cartList: List<CartItemModel>,
+    private val onPlus: (CartItemModel) -> Unit,
+    private val onDecrease: (CartItemModel) -> Unit
 ): RecyclerView.Adapter<CartAdapter.ViewHolder>() {
 
     class ViewHolder(val binding: CartDesignUiBinding): RecyclerView.ViewHolder(binding.root)
@@ -24,6 +27,12 @@ class CartAdapter(
         holder.binding.lblQuantity.text = cart.qty.toString()
         ImageHelper.imageLoader(holder.binding.imgProduct, cart.image)
 
+        holder.binding.btnAdd.setOnClickListener {
+            onPlus(cart)
+        }
+        holder.binding.btnDecrease.setOnClickListener {
+            onDecrease(cart)
+        }
     }
 
     override fun getItemCount(): Int = cartList.size
