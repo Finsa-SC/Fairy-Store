@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.fairystore.MainActivity
 import com.example.fairystore.R
 import com.example.fairystore.core.network.ApiHelper
+import com.example.fairystore.core.util.ValidationHelper
 import com.example.fairystore.databinding.ActivityLoginBinding
 import org.json.JSONObject
 
@@ -27,6 +28,12 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.btnLogin.setOnClickListener {
+            val view = binding.main
+            if(ValidationHelper.hasEmpty(view)){
+                Toast.makeText(this, "Require input is missing or empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val username = binding.txtUsername.text.toString().trim()
             val password = binding.txtPassword.text.toString().trim()
 

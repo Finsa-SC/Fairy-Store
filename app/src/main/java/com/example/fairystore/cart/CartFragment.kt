@@ -143,12 +143,11 @@ class CartFragment : Fragment() {
                 is ApiHelper.ApiResult.Empty ->
                     Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
                 is ApiHelper.ApiResult.Error ->
-                    Toast.makeText(requireContext(), it.msg, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(),  it.msg, Toast.LENGTH_SHORT).show()
             }
         }
     }
     private fun cartMapping(){
-
         if(!cartLoaded || !productLoaded) return
         val productMap = productList.associateBy { it.id }
 
@@ -162,8 +161,8 @@ class CartFragment : Fragment() {
                     price = it.price,
                     qty = cart.quantity
                 ))
-                adapter.notifyDataSetChanged()
             }
         }
+        adapter.notifyDataSetChanged()
     }
 }
