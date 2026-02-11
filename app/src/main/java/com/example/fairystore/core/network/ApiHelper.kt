@@ -1,5 +1,6 @@
 package com.example.fairystore.core.network
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import androidx.core.os.unregisterForAllProfilingResults
@@ -25,6 +26,7 @@ object ApiHelper {
     }
 
     private fun request(
+        context: Context,
         method: HttpMethod,
         endpoint: String,
         jsonBody: JSONObject? = null,
@@ -33,6 +35,8 @@ object ApiHelper {
         Thread {
             var conn: HttpURLConnection? = null
             val result = try {
+
+
                 conn = (URL(baseUrl + endpoint).openConnection() as HttpURLConnection).apply {
                     requestMethod = method.name
                     readTimeout = 5000
@@ -43,6 +47,14 @@ object ApiHelper {
                         doOutput = true
                     }
                 }
+
+                val pref = context.getSharedPreferences("auth", Context.MODE_PRIVATE)
+                val token = pref.getString("token", null)
+
+                if(token != null){
+                    conn.setRequestProperty("Authorization", "Bearer $token")
+                }
+
                 jsonBody?.let {
                     conn.outputStream.use { outputStream ->
                         outputStream.write(it.toString().toByteArray())
@@ -86,6 +98,6 @@ object ApiHelper {
         }.start()
     }
 
-    fun post(endpoint: String, jsonBody: JSONObject? = null, callback: (ApiResult) -> Unit) = request(HttpMethod.POST, endpoint, jsonBody, callback)
-    fun get(endpoint: String, callback: (ApiResult) -> Unit) = request(HttpMethod.GET, endpoint, callback = callback)
+    fun post(context: Context, endpoint: String, jsonBody: JSONObject? = null, callback: (ApiResult) -> Unit) = request(context, HttpMethod.POST, endpoint, jsonBody, callback)
+    fun get(context: Context, endpoint:String, callback: (ApiResult) -> Unit) = request(context, HttpMethod.GET, endpoint, callback = callback)
 }

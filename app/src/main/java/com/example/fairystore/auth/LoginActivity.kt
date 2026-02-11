@@ -1,6 +1,7 @@
 package com.example.fairystore.auth
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -54,6 +55,8 @@ class LoginActivity : AppCompatActivity() {
         ApiHelper.post("auth/login", jsonBody){
             when(it){
                 is ApiHelper.ApiResult.Success ->{
+                    val json = JSONObject(it.jsonBody)
+                    val token = json.getString("token")
                     startActivity(Intent(this, MainActivity::class.java))
                     this.finish()
                 }
@@ -63,5 +66,10 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(this, it.msg, Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun saveToken(token: String){
+        val pref = getSharedPreferences("auth", MODE_PRIVATE)
+        pref.edit().putString("token", token).apply()
     }
 }

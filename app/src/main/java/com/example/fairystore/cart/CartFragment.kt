@@ -73,15 +73,10 @@ class CartFragment : Fragment() {
         adapter = CartAdapter(
             cartUiList,
             onPlus = { cart ->
-                val index = cartUiList.indexOf(cart)
                 cart.qty++
-                adapter.notifyItemChanged(index)
             },
-            onDecrease = { cart ->
-                val index = cartUiList.indexOf(cart)
-                if(cart.qty > 1)
-                    cart.qty--
-                adapter.notifyItemChanged(index)
+            onDecrease = { cart->
+                cart.qty--
             }
             )
         rv.adapter = adapter
@@ -109,7 +104,6 @@ class CartFragment : Fragment() {
                         )
                     }
                     responseCart = CartResponse( jsonResponse.getInt("id"), cartList)
-                    adapter.notifyDataSetChanged()
                     cartLoaded = true
                     cartMapping()
                 }

@@ -43,9 +43,9 @@ class UserDetailActivity : AppCompatActivity() {
 
                     binding.lblUsername.text = json.getString("username")
 
-                    val first_name = jsonFullName.getString("firstname")
-                    val last_name = jsonFullName.getString("lastname")
-                    binding.lblFullName.text = "${first_name} ${last_name}"
+                    val firstName = jsonFullName.getString("firstname")
+                    val lastName = jsonFullName.getString("lastname")
+                    binding.lblFullName.text = "$firstName $lastName"
 
                     binding.lblEmail.text = json.getString("email")
                     binding.lblPhone.text = json.getString("phone")
