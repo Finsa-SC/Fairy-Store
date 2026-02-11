@@ -52,11 +52,12 @@ class LoginActivity : AppCompatActivity() {
             put("password", password)
         }
 
-        ApiHelper.post("auth/login", jsonBody){
+        ApiHelper.post(this, "auth/login", jsonBody){
             when(it){
                 is ApiHelper.ApiResult.Success ->{
                     val json = JSONObject(it.jsonBody)
                     val token = json.getString("token")
+                    saveToken(token)
                     startActivity(Intent(this, MainActivity::class.java))
                     this.finish()
                 }
